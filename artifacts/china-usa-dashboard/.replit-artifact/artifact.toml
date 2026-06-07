@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "China vs USA Asset Dashboard"
+version = "1.0.0"
+id = "artifacts/china-usa-dashboard"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21122
+
+[services.development]
+run = "pnpm --filter @workspace/china-usa-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/china-usa-dashboard", "run", "build" ]
+publicDir = "artifacts/china-usa-dashboard/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21122"
+BASE_PATH = "/"

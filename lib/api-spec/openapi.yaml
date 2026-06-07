@@ -1,0 +1,531 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: China vs USA Asset & Currency Comparison API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: currency
+    description: Currency exchange rates
+  - name: assets
+    description: Financial asset data
+  - name: charts
+    description: Historical chart data
+  - name: comparison
+    description: Side-by-side comparison data
+  - name: summary
+    description: Dashboard summary data
+  - name: news
+    description: Financial news articles
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /rate/usd-cny:
+    get:
+      operationId: getExchangeRate
+      tags: [currency]
+      summary: Get USD to CNY exchange rate
+      description: Returns current USD/CNY exchange rate and related data
+      responses:
+        "200":
+          description: Exchange rate data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeRate"
+
+  /assets/usa:
+    get:
+      operationId: getUsaAssets
+      tags: [assets]
+      summary: Get USA financial assets
+      description: Returns current USA financial indicators
+      responses:
+        "200":
+          description: USA asset data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsaAssets"
+
+  /assets/china:
+    get:
+      operationId: getChinaAssets
+      tags: [assets]
+      summary: Get China financial assets
+      description: Returns current China financial indicators
+      responses:
+        "200":
+          description: China asset data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChinaAssets"
+
+  /comparison:
+    get:
+      operationId: getComparison
+      tags: [comparison]
+      summary: Get side-by-side comparison data
+      description: Returns comparison data for USA vs China across key metrics
+      responses:
+        "200":
+          description: Comparison data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComparisonData"
+
+  /charts/currency:
+    get:
+      operationId: getCurrencyChart
+      tags: [charts]
+      summary: Get USD/CNY historical chart data
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [1D, 7D, 30D]
+          description: Time period for chart data
+      responses:
+        "200":
+          description: Currency chart data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChartData"
+
+  /charts/markets:
+    get:
+      operationId: getMarketsChart
+      tags: [charts]
+      summary: Get USA vs China market index chart data
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [1D, 7D, 30D]
+          description: Time period for chart data
+      responses:
+        "200":
+          description: Markets chart data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketsChartData"
+
+  /summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [summary]
+      summary: Get dashboard summary with winner indicators
+      description: Returns top-level summary comparing both economies with winner per category
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /news:
+    get:
+      operationId: getNews
+      tags: [news]
+      summary: Get financial news for USA and China
+      parameters:
+        - name: country
+          in: query
+          schema:
+            type: string
+            enum: [USA, CHINA, ALL]
+          description: Filter by country
+      responses:
+        "200":
+          description: Financial news articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsResponse"
+
+  /currency/convert:
+    get:
+      operationId: convertCurrency
+      tags: [currency]
+      summary: Convert between USD and CNY
+      parameters:
+        - name: amount
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Amount to convert
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [USD, CNY]
+          description: Source currency
+      responses:
+        "200":
+          description: Conversion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversionResult"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ExchangeRate:
+      type: object
+      required:
+        - usdToCny
+        - cnyToUsd
+        - change24h
+        - changePercent24h
+        - high24h
+        - low24h
+        - lastUpdated
+      properties:
+        usdToCny:
+          type: number
+        cnyToUsd:
+          type: number
+        change24h:
+          type: number
+        changePercent24h:
+          type: number
+        high24h:
+          type: number
+        low24h:
+          type: number
+        lastUpdated:
+          type: string
+
+    AssetItem:
+      type: object
+      required:
+        - name
+        - value
+        - change
+        - changePercent
+        - unit
+      properties:
+        name:
+          type: string
+        value:
+          type: number
+        change:
+          type: number
+        changePercent:
+          type: number
+        unit:
+          type: string
+        description:
+          type: ["string", "null"]
+
+    UsaAssets:
+      type: object
+      required:
+        - sp500
+        - usdStrength
+        - techMarketCap
+        - gdp
+        - inflation
+        - unemployment
+      properties:
+        sp500:
+          $ref: "#/components/schemas/AssetItem"
+        usdStrength:
+          $ref: "#/components/schemas/AssetItem"
+        techMarketCap:
+          $ref: "#/components/schemas/AssetItem"
+        gdp:
+          $ref: "#/components/schemas/AssetItem"
+        inflation:
+          $ref: "#/components/schemas/AssetItem"
+        unemployment:
+          $ref: "#/components/schemas/AssetItem"
+
+    ChinaAssets:
+      type: object
+      required:
+        - shanghaiIndex
+        - cnyStrength
+        - manufacturingOutput
+        - gdp
+        - inflation
+        - tradeBalance
+      properties:
+        shanghaiIndex:
+          $ref: "#/components/schemas/AssetItem"
+        cnyStrength:
+          $ref: "#/components/schemas/AssetItem"
+        manufacturingOutput:
+          $ref: "#/components/schemas/AssetItem"
+        gdp:
+          $ref: "#/components/schemas/AssetItem"
+        inflation:
+          $ref: "#/components/schemas/AssetItem"
+        tradeBalance:
+          $ref: "#/components/schemas/AssetItem"
+
+    ComparisonRow:
+      type: object
+      required:
+        - metric
+        - usa
+        - china
+        - usaValue
+        - chinaValue
+        - winner
+        - unit
+      properties:
+        metric:
+          type: string
+        usa:
+          type: string
+        china:
+          type: string
+        usaValue:
+          type: number
+        chinaValue:
+          type: number
+        winner:
+          type: string
+          enum: [USA, CHINA, TIE]
+        unit:
+          type: string
+        description:
+          type: ["string", "null"]
+
+    ComparisonData:
+      type: object
+      required:
+        - rows
+        - overallWinner
+        - usaScore
+        - chinaScore
+        - lastUpdated
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparisonRow"
+        overallWinner:
+          type: string
+          enum: [USA, CHINA, TIE]
+        usaScore:
+          type: integer
+        chinaScore:
+          type: integer
+        lastUpdated:
+          type: string
+
+    ChartPoint:
+      type: object
+      required:
+        - timestamp
+        - value
+      properties:
+        timestamp:
+          type: string
+        value:
+          type: number
+
+    ChartData:
+      type: object
+      required:
+        - period
+        - points
+        - change
+        - changePercent
+      properties:
+        period:
+          type: string
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChartPoint"
+        change:
+          type: number
+        changePercent:
+          type: number
+
+    MarketsChartPoint:
+      type: object
+      required:
+        - timestamp
+        - usa
+        - china
+      properties:
+        timestamp:
+          type: string
+        usa:
+          type: number
+        china:
+          type: number
+
+    MarketsChartData:
+      type: object
+      required:
+        - period
+        - points
+      properties:
+        period:
+          type: string
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketsChartPoint"
+
+    WinnerIndicator:
+      type: object
+      required:
+        - category
+        - winner
+        - margin
+        - summary
+      properties:
+        category:
+          type: string
+        winner:
+          type: string
+          enum: [USA, CHINA, TIE]
+        margin:
+          type: string
+        summary:
+          type: string
+
+    DashboardSummary:
+      type: object
+      required:
+        - todaysWinner
+        - aiInsight
+        - categories
+        - exchangeRate
+        - usaStrength
+        - chinaStrength
+        - lastUpdated
+      properties:
+        todaysWinner:
+          type: string
+          enum: [USA, CHINA, TIE]
+        aiInsight:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/WinnerIndicator"
+        exchangeRate:
+          type: number
+        usaStrength:
+          type: number
+        chinaStrength:
+          type: number
+        lastUpdated:
+          type: string
+
+    NewsArticle:
+      type: object
+      required:
+        - id
+        - title
+        - summary
+        - source
+        - country
+        - category
+        - publishedAt
+        - sentiment
+        - url
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        source:
+          type: string
+        country:
+          type: string
+          enum: [USA, CHINA]
+        category:
+          type: string
+          enum: [Markets, Economy, Currency, Trade, Technology, Policy]
+        publishedAt:
+          type: string
+        sentiment:
+          type: string
+          enum: [positive, negative, neutral]
+        url:
+          type: string
+        imageTag:
+          type: ["string", "null"]
+
+    NewsResponse:
+      type: object
+      required:
+        - articles
+        - lastUpdated
+        - usaCount
+        - chinaCount
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        lastUpdated:
+          type: string
+        usaCount:
+          type: integer
+        chinaCount:
+          type: integer
+
+    ConversionResult:
+      type: object
+      required:
+        - from
+        - to
+        - amount
+        - result
+        - rate
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        amount:
+          type: number
+        result:
+          type: number
+        rate:
+          type: number
